@@ -36,7 +36,11 @@ module.exports = function(app) {
 			userController.editUserController(req, res)
 		})
 	app.route('/delete/:id')
-        .get((req, res) => {
+        .get((req, res) => {// can chuyen ve delete
 			userController.deleteUserController(req, res)
 		})
+	app.route('/search/:name')
+        .get((req, res) => {// can chuyen ve delete
+			userController.searchUserController(req, res)
+		})	
 }
