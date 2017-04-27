@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var methodOverride = require('method-override')
 firebase = require('firebase');
 var config = {
     apiKey: "AIzaSyD-NuiVXjoB4p_DETbIDLkarI-58xE1Tys",
@@ -30,6 +31,14 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(methodOverride(function (req, res) {
+  if (req.body && typeof req.body === 'object' && '_method' in req.body) {
+    // look in urlencoded POST bodies and delete it
+    var method = req.body._method
+    delete req.body._method
+    return method
+  }
+}));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(expressSession({
 	secret: 'luandeptrai',

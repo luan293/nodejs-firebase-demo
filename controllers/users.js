@@ -4,21 +4,12 @@
 //}
 var refUser = firebase.database().ref('users');
 
-getUserController = function(req, res) {
-  return res.render("getusers", {params: 'test'});
-}
-
-updateUserController = function(req, res) {
-  //return render("getusers", {params: 'test'})
-}
-
 renderRegUserController = function(req, res) {
   //return render("getusers", {params: 'test'})
   return res.render('regUser');
 }
 
 regUserController = function(req, res) {
-  //return render("getusers", {params: 'test'})
   reqUser = {
     username: req.body.username,
     password: req.body.password
@@ -39,39 +30,31 @@ regUserController = function(req, res) {
 }
 
 rederLoginUserController = function(req, res){
-  //return render("getusers", {params: 'test'})
   if(req.session.userlogin){
     searchUserbyKey(req.session.userlogin.key).then(function(user) {
-      //refLogin_at = refUser.child(i + '/timestamp');
       reqUser.login_at = new Date();
       reqUser.status = 200;
       reqUser.login = true;
       return res.json(reqUser);
     })
   } else {
-      return res.render('loginUser');
+    return res.render('loginUser');
   }
 }
 
 loginUserController = function(req, res) {
-  //return render("getusers", {params: 'test'})
   reqUser = {
-       username: req.body.username,
-       password: req.body.password
+    username: req.body.username,
+    password: req.body.password
   };
-  refUser.once("value")
+  refUser.once('value')
     .then(function(snapshot) {
       var users = snapshot.val();
       for(i in users) {
         if(users[i].username === reqUser.username && users[i].password === reqUser.password) {
-          //refLogin_at = refUser.child(i + '/timestamp');
           reqUser.login_at = Date();            
           updateUserTimeStampbyKey('login_at', i, reqUser.login_at);
           users[i].status = 200;
-          req.session.userlogin = {
-            key: i,
-            role: users[i].role
-          };
           return res.json(users[i]);
         }
       }
@@ -81,14 +64,14 @@ loginUserController = function(req, res) {
 
 function searchUserbyKey(key) {
   return new Promise(function(resolve, reject) {
-    refUser.once("value", function(snapshot) {
+    refUser.once('value', function(snapshot) {
       var users = snapshot.val();
       for(i in users) {
-        if(i === key) {
+        if(i === key) {         
           resolve(users[i]);
         }
       }
-      reject();
+      reject('khong tim thay user');
     });
   });
 }
@@ -100,27 +83,15 @@ function updateUserTimeStampbyKey(outOrin, key, time) {
   });
 }
 
-// function signed_in(req){
-//   if(typeof req.session.userlogin != 'undefined'){
-//     return true;
-//   }else{
-//     return false;
-//   }
-// }
-
-function signed_in(req, res) {
-  if(typeof req.session.userlogin === 'undefined') {
-    return res.redirect('/login')
-  }
-}
-
 logoutUserController = function(req, res) {
-  signed_in(req, res);
-  searchUserbyKey(req.session.userlogin.key).then(function(user) {
+  //signed_in(req, res);
+  reqUser = {
+    key: req.body.key
+  }
+  searchUserbyKey(reqUser.key).then(function(user) {
     user.timestamp.logout_at = Date();
-    updateUserTimeStampbyKey('logout_at', req.session.userlogin.key, user.timestamp.logout_at);
+    updateUserTimeStampbyKey('logout_at', reqUser.key, user.timestamp.logout_at);
     user.status = 200;
-    req.session.destroy();
     return res.json(user);
   }, function() {
     return res.redirect('/login');
@@ -136,36 +107,41 @@ renderEditUserController = function(req, res) {
 }
 
 editUserController = function(req, res) {
+  // signed_in(req, res);
   reqUser = {
-    username:req.body.username,
-    password:req.body.password
+    key: req.body.key,
+    username: req.body.username,
+    password: req.body.password
   };
-  refEdit = refUser.child(req.session.userlogin.key)
+  refEdit = refUser.child(reqUser.key);
   refEdit.update({
     username: reqUser.username,
     password: reqUser.password,    
-  })
+  });
   reqUser.status = 200;
   return res.json(reqUser);
 }
 
 deleteUserController = function(req, res){
-  signed_in(req, res);
   reqUser = {
-    key: req.params.id
+    user: {
+      key: req.body.user.key
+    },
+    admin: {
+      role: req.body.admin.role
+    }
   };
-  console.log(req.params.id);
-  if(req.session.userlogin.role === 1){
-    searchUserbyKey(req.params.id).then(function(user){
+  if(reqUser.admin.role === 1){
+    searchUserbyKey(reqUser.user.key).then(function(user){
       var temp = user;
-      refUser.child(req.params.id).remove();
+      refUser.child(reqUser.user.key).remove();
       temp.status = 200;
       return res.json(temp);
-    }, function(){
-      return res.end('loi');
+    }, function(err){
+      return res.end(err);
     })
   } else {
-    console.log('member');
+    return res.end('khong co quyen admin');
   }
 }
 
@@ -188,7 +164,7 @@ searchUserController = function(req, res){
 function searchUserbyName(name){
   var result = []; 
   return new Promise(function(resolve, reject) {
-    refUser.once("value")
+    refUser.once('value')
     .then(function(snapshot) {
       var users = snapshot.val();
       for(i in users){
@@ -206,8 +182,6 @@ function searchUserbyName(name){
 }
 
 module.exports = {
-  getUserController: getUserController,
-  updateUserController: updateUserController,
   renderRegUserController: renderRegUserController,
   regUserController: regUserController,
   rederLoginUserController: rederLoginUserController,
