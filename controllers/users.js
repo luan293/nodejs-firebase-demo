@@ -93,8 +93,8 @@ logoutUserController = function(req, res) {
     updateUserTimeStampbyKey('logout_at', reqUser.key, user.timestamp.logout_at);
     user.status = 200;
     return res.json(user);
-  }, function() {
-    return res.redirect('/login');
+  }, function(err) {
+    return res.end(err);
   });
 }
 
@@ -114,12 +114,19 @@ editUserController = function(req, res) {
     password: req.body.password
   };
   refEdit = refUser.child(reqUser.key);
+  console.log(refEdit);
   refEdit.update({
     username: reqUser.username,
     password: reqUser.password,    
+  }, function(err){
+    if(err) {
+      return res.end('khong update duoc ' + err);
+    } else {
+      reqUser.status = 200;
+      return res.json(reqUser);
+    }
   });
-  reqUser.status = 200;
-  return res.json(reqUser);
+  
 }
 
 deleteUserController = function(req, res){
