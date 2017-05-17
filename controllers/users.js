@@ -11,6 +11,7 @@ regUserController = function(req, res) {
     username: req.body.username,
     password: req.body.password
   };
+
   refUser.push({
     username: reqUser.username,
     password: reqUser.password,
@@ -24,7 +25,7 @@ regUserController = function(req, res) {
     return res.json(reqUser);
   },function(err) {
     return res.json({error: err});
-  })
+  });
 }
 
 // rederLoginUserController = function(req, res){
@@ -45,6 +46,7 @@ loginUserController = function(req, res) {
     username: req.body.username,
     password: req.body.password
   };
+
   refUser.once('value')
     .then(function(snapshot) {
       var users = snapshot.val();
@@ -139,6 +141,7 @@ deleteUserController = function(req, res) {
       role: req.body.admin.role
     }
   };
+
   if(reqUser.admin.role === 1) {
     searchUserbyKey(reqUser.user.key).then(function(user) {  //resolve
       var temp = user;
@@ -156,13 +159,14 @@ deleteUserController = function(req, res) {
 searchUserController = function(req, res){
   reqUser = {
     name: req.params.name
-  }
+  };
+
   searchUserbyName(reqUser.name).then(function(result) {    //resolve
     resUser = {
       status: 200,
       keyword: reqUser.name,
       result: result
-    }
+    };
     return res.json(resUser);
   }, function(err){                 //reject
     return res.json({error: err});
